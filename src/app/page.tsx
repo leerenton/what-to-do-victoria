@@ -32,15 +32,6 @@ export default function HoldingPage() {
       />
 
       <div className="max-w-lg text-center">
-        <img
-          src="/assets/wtd_victoria_black.png"
-          alt="What To Do Victoria"
-          className="h-12 mx-auto mb-8"
-          onError={(e) => {
-            (e.target as HTMLImageElement).style.display = "none";
-          }}
-        />
-
         <h1 className="font-display font-black text-4xl sm:text-5xl text-stone-900 mb-4 leading-tight">
           Something exciting<br />is coming to Victoria.
         </h1>
