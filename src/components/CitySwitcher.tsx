@@ -18,6 +18,7 @@ export default function CitySwitcher({ currentSlug, onClose }: Props) {
 
   const supabase = createClient();
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     async function load() {
       const [{ data: sitesData }, { data: { session } }] = await Promise.all([
