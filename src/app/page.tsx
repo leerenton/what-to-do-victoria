@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Image from 'next/image';
 import { getCityConfig } from '@/lib/get-city';
 import { createClient } from '@/lib/supabase/server';
 import { JsonLd, websiteSchema, itemListSchema, eventSchema } from '@/lib/structured-data';
@@ -61,25 +60,30 @@ export default async function HomePage() {
   const { satStr, sunStr, label: weekendLabel } = getWeekendRange();
 
   const [
-    { data: featuredEvents },
+    { data: heroEventsRaw },
     { data: weekendEvents },
     { data: upcomingEvents },
     { data: eatBusinesses },
     { data: drinkBusinesses },
     { data: doBusinesses },
     { data: articles },
+    { data: heroBizPool },
   ] = await Promise.all([
-    supabase.from('events').select('*').eq('city', city.slug).eq('featured', true).gte('date', now).order('date').limit(3),
+    supabase.from('events').select('*').eq('city', city.slug).not('img', 'is', null).gte('date', now).order('admin_priority', { ascending: false }).order('date').limit(6),
     supabase.from('events').select('*').eq('city', city.slug).gte('date', satStr).lte('date', sunStr).order('admin_priority', { ascending: false }).order('date').limit(12),
     supabase.from('events').select('*').eq('city', city.slug).gte('date', now).order('date').limit(8),
     supabase.from('businesses').select('*').eq('city', city.slug).eq('section', 'eat').order('admin_priority', { ascending: false }).limit(10),
     supabase.from('businesses').select('*').eq('city', city.slug).eq('section', 'drink').order('admin_priority', { ascending: false }).limit(10),
     supabase.from('businesses').select('*').eq('city', city.slug).eq('section', 'do').order('admin_priority', { ascending: false }).limit(10),
     supabase.from('articles').select('*').eq('approved', true).order('published_at', { ascending: false }).limit(4),
+    supabase.from('businesses').select('id,name,img,type,suburb,slug,color,emoji').eq('city', city.slug).not('img', 'is', null).order('admin_priority', { ascending: false }).limit(20),
   ]);
 
-  const heroEvents = featuredEvents ?? [];
-  const [mainHero, ...sideHeroes] = heroEvents;
+  const heroEvents = heroEventsRaw ?? [];
+  const [mainHero, secondHero] = heroEvents;
+  const heroArticle = (articles ?? []).find(a => a.hero_img) ?? null;
+  const bizWithImg = heroBizPool ?? [];
+  const heroBtmBiz = bizWithImg[Math.floor(Math.random() * bizWithImg.length)] ?? null;
 
   return (
     <>
@@ -92,7 +96,7 @@ export default async function HomePage() {
           upcomingEvents.map(e => ({ name: e.title, url: `https://${city.domain}/events/${e.id}` }))
         )} />
       )}
-      {featuredEvents?.map(e => (
+      {heroEvents.map(e => (
         <JsonLd key={e.id} data={eventSchema(e as Event, city)} />
       ))}
 
@@ -115,16 +119,14 @@ export default async function HomePage() {
       </div>
 
       {/* Masonry hero */}
-      {heroEvents.length > 0 && (
+      {(mainHero || heroBtmBiz) && (
         <section className="masonry-hero">
           <div className="container masonry-hero__grid">
+            {/* Main (left): top event with image */}
             {mainHero && (
               <Link href={`/events/${mainHero.id}`} className="masonry-hero__main">
-                <div className="masonry-hero__img-wrap" style={!mainHero.img ? { background: mainHero.color ?? 'var(--dark)' } : undefined}>
-                  {mainHero.img
-                    ? <img src={mainHero.img} alt={mainHero.title} loading="eager" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                    : mainHero.emoji && <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', fontSize: '5rem', opacity: .5 }}>{mainHero.emoji}</span>
-                  }
+                <div className="masonry-hero__img-wrap">
+                  <img src={mainHero.img!} alt={mainHero.title} loading="eager" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                   <div className="masonry-hero__overlay" />
                 </div>
                 <div className="masonry-hero__info">
@@ -135,21 +137,43 @@ export default async function HomePage() {
               </Link>
             )}
             <div className="masonry-hero__stack">
-              {sideHeroes.slice(0, 2).map(e => (
-                <Link key={e.id} href={`/events/${e.id}`} className="masonry-hero__small">
-                  <div className="masonry-hero__img-wrap" style={!e.img ? { background: e.color ?? 'var(--dark)' } : undefined}>
-                    {e.img
-                      ? <img src={e.img} alt={e.title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                      : e.emoji && <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', fontSize: '3rem', opacity: .5 }}>{e.emoji}</span>
-                    }
+              {/* Top-right: article preferred, else second event */}
+              {heroArticle ? (
+                <Link href={`/guides/${heroArticle.id}`} className="masonry-hero__small">
+                  <div className="masonry-hero__img-wrap">
+                    <img src={heroArticle.hero_img!} alt={heroArticle.title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     <div className="masonry-hero__overlay" />
                   </div>
                   <div className="masonry-hero__info">
-                    <span className="masonry-hero__badge">{e.category ?? 'Event'}</span>
-                    <h3 className="masonry-hero__title masonry-hero__title--sm">{e.title}</h3>
+                    <span className="masonry-hero__badge masonry-hero__badge--article">{heroArticle.type ?? 'Article'}</span>
+                    <h3 className="masonry-hero__title masonry-hero__title--sm">{heroArticle.title}</h3>
                   </div>
                 </Link>
-              ))}
+              ) : secondHero ? (
+                <Link href={`/events/${secondHero.id}`} className="masonry-hero__small">
+                  <div className="masonry-hero__img-wrap">
+                    <img src={secondHero.img!} alt={secondHero.title} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    <div className="masonry-hero__overlay" />
+                  </div>
+                  <div className="masonry-hero__info">
+                    <span className="masonry-hero__badge">{secondHero.category ?? 'Event'}</span>
+                    <h3 className="masonry-hero__title masonry-hero__title--sm">{secondHero.title}</h3>
+                  </div>
+                </Link>
+              ) : null}
+              {/* Bottom-right: business */}
+              {heroBtmBiz && (
+                <Link href={heroBtmBiz.slug ? `/${heroBtmBiz.slug}` : `/listing?id=${heroBtmBiz.id}`} className="masonry-hero__small">
+                  <div className="masonry-hero__img-wrap">
+                    <img src={heroBtmBiz.img!} alt={heroBtmBiz.name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    <div className="masonry-hero__overlay" />
+                  </div>
+                  <div className="masonry-hero__info">
+                    <span className="masonry-hero__badge">{heroBtmBiz.type ?? 'Place'}</span>
+                    <h3 className="masonry-hero__title masonry-hero__title--sm">{heroBtmBiz.name}</h3>
+                  </div>
+                </Link>
+              )}
             </div>
           </div>
         </section>
@@ -168,11 +192,26 @@ export default async function HomePage() {
           </div>
           {(weekendEvents ?? []).length > 0 ? (
             <>
-              <div className="event-scroll">
-                {(weekendEvents ?? []).map(e => (
-                  <EventScrollCard key={e.id} event={e as Event} />
-                ))}
-              </div>
+              {/* Top 2 events as large featured-pair, rest in horizontal scroll */}
+              {(() => {
+                const evs = (weekendEvents ?? []) as Event[];
+                const picks = evs.slice(0, 2);
+                const rest = evs.slice(2);
+                return (
+                  <>
+                    {picks.length > 0 && (
+                      <div className={picks.length === 2 ? 'featured-pair' : undefined}>
+                        {picks.map(e => <FeaturedCard key={e.id} event={e} />)}
+                      </div>
+                    )}
+                    {rest.length > 0 && (
+                      <div className="event-scroll" style={{ marginTop: '.75rem' }}>
+                        {rest.map(e => <EventScrollCard key={e.id} event={e} />)}
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
               <div className="weekend-see-all">
                 <Link href="/events" className="btn btn--outline">See all this weekend →</Link>
               </div>
@@ -189,7 +228,7 @@ export default async function HomePage() {
       <div className="container">
         <div className="planner-card">
           <h3 className="planner-card__title">Planning a trip to {city.name}?</h3>
-          <p className="planner-card__sub">Browse everything that's on and plan your perfect visit.</p>
+          <p className="planner-card__sub">Browse everything that&apos;s on and plan your perfect visit.</p>
           <Link href="/events" className="btn btn--teal btn--full">See all upcoming events →</Link>
         </div>
       </div>
@@ -329,19 +368,61 @@ function UpcomingItem({ event }: { event: Event }) {
 function BizScrollCard({ biz }: { biz: Business }) {
   const href = biz.slug ? `/${biz.slug}` : `/listing?id=${biz.id}`;
   return (
-    <Link href={href} className="biz-card">
-      {biz.img
-        ? <img src={biz.img} alt={biz.name} className="biz-card__img" loading="lazy" />
-        : <div className="biz-card__img-placeholder" style={{ background: biz.color ?? 'var(--cream)' }}>{biz.emoji ?? '🏪'}</div>
-      }
+    <Link href={href} className={`biz-card${biz.is_gold ? ' biz-card--gold' : ''}`}>
+      {biz.img ? (
+        <div className="biz-card__img biz-card__img--photo" style={{ backgroundImage: `url('${biz.img}')` }}>
+          {biz.is_gold && <div className="biz-card__gold-badge">⭐</div>}
+        </div>
+      ) : (
+        <div className="biz-card__img-placeholder" style={{ background: `${biz.color ?? '#4ac8d0'}22` }}>
+          {biz.emoji ?? '🏪'}
+        </div>
+      )}
       <div className="biz-card__body">
         <h3 className="biz-card__name">{biz.name}</h3>
         <p className="biz-card__type">{biz.type}{biz.suburb ? ` · ${biz.suburb}` : ''}</p>
-        {biz.is_gold && (
-          <div className="biz-card__badges">
-            <span className="biz-badge biz-badge--event">⭐ Gold</span>
-          </div>
-        )}
+      </div>
+    </Link>
+  );
+}
+
+function FeaturedCard({ event }: { event: Event }) {
+  const href = event.slug ? `/events/${event.slug}` : `/events/${event.id}`;
+  const featImg = event.img;
+  const sportBrands: Record<string, { bg: string; accent: string; logo: string }> = {
+    'afl-cats': { bg: '#001F5B', accent: '#C49A2B', logo: '🏉' },
+    'nbl-united': { bg: '#002B5C', accent: '#63B3ED', logo: '🏀' },
+  };
+  const brand = event.source ? sportBrands[event.source] : null;
+  const borderStyle = brand ? { borderTop: `3px solid ${brand.accent}` } : undefined;
+
+  return (
+    <Link href={href} className="featured-card" style={borderStyle}>
+      {brand ? (
+        <div className="featured-card__img featured-card__img--sport" style={{ background: brand.bg }}>
+          <span style={{ fontSize: '2.8rem' }}>{brand.logo}</span>
+        </div>
+      ) : featImg ? (
+        <div className="featured-card__img featured-card__img--photo" style={{ backgroundImage: `url('${featImg}')` }} />
+      ) : (
+        <div className="featured-card__img" style={{ background: `${event.color ?? '#e8f4ff'}22` }}>
+          {event.emoji ?? '📅'}
+        </div>
+      )}
+      <div className="featured-card__body">
+        <span className="featured-card__cat">{event.category}</span>
+        <h3 className="featured-card__title">{event.title}</h3>
+        <div className="featured-card__meta">
+          {event.date && <span>📅 {fmtEventDate(event.date)}</span>}
+          {event.time && <span>🕐 {event.time}</span>}
+          {event.location && <span>📍 {event.location}</span>}
+        </div>
+        <div className="featured-card__footer">
+          <span className={`featured-card__price${event.price === 'Free' ? ' featured-card__price--free' : ''}`}>
+            {(event.price || '').replace(/[,\s]+$/, '') || 'See event'}
+          </span>
+          <span className="btn btn--teal btn--sm" style={{ marginLeft: 'auto' }}>View →</span>
+        </div>
       </div>
     </Link>
   );
