@@ -14,6 +14,7 @@ export default function SaveButton({ itemId, itemType, title }: Props) {
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     async function check() {
       const { data: { session } } = await supabase.auth.getSession();
