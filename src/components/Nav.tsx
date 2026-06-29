@@ -34,11 +34,13 @@ export default function Nav({ city, onCitySwitcher }: NavProps) {
       <div className="nav__inner container">
         {/* Logo */}
         <Link href="/" className="nav__logo-link">
-          {city.logoUrl ? (
-            <Image src={city.logoUrl} alt={city.fullName} width={140} height={36} className="nav__logo" />
-          ) : (
-            <span className="nav__logo-text">{city.fullName}</span>
-          )}
+          <Image
+            src={city.logoUrl ?? `/wtd_${city.slug}_inverted.png`}
+            alt={city.fullName}
+            width={140}
+            height={36}
+            className="nav__logo"
+          />
         </Link>
 
         {/* Desktop nav */}
@@ -99,6 +101,7 @@ export default function Nav({ city, onCitySwitcher }: NavProps) {
             </div>
           </div>
 
+          <Link href="/drink" className="nav__link">Drink</Link>
           <Link href="/events" className="nav__link">Events</Link>
           <Link href="/stay" className="nav__link">Stay</Link>
           <Link href="/guides" className="nav__link">Guides</Link>

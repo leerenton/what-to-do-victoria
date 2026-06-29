@@ -5370,3 +5370,79 @@ button { cursor: pointer; font-family: inherit; border: none; background: none; 
   pointer-events: all !important;
 }
 
+
+/* ── NAV DARK OVERRIDES ────────────────────────────────────────────────────── */
+.nav {
+  background: var(--dark) !important;
+  border-bottom: none !important;
+}
+.nav__drop-toggle {
+  color: rgba(255,255,255,.9) !important;
+}
+.nav__drop-toggle:hover { color: var(--teal) !important; }
+.nav__links a:not(.btn) { color: rgba(255,255,255,.9); }
+.nav__links a:not(.btn):hover { color: var(--teal) !important; }
+.nav__link { color: rgba(255,255,255,.9) !important; }
+.nav__link:hover { color: var(--teal) !important; }
+.nav__city-btn {
+  border-color: rgba(255,255,255,.25) !important;
+  color: rgba(255,255,255,.8) !important;
+}
+.nav__city-btn:hover { border-color: var(--teal) !important; color: var(--teal) !important; }
+.nav__account-btn { background: rgba(255,255,255,.1) !important; color: rgba(255,255,255,.8) !important; }
+.nav__account-btn:hover { background: rgba(255,255,255,.2) !important; }
+.nav__mobile-toggle { color: rgba(255,255,255,.9) !important; }
+
+/* ── ANNOUNCEMENT BAR ──────────────────────────────────────────────────────── */
+.announce-bar {
+  background: var(--teal);
+  padding: .55rem 0;
+}
+.announce-bar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.announce-bar__link {
+  font-size: .82rem;
+  font-weight: 700;
+  color: var(--dark);
+  text-decoration: none;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.announce-bar__link:hover { text-decoration: underline; }
+.announce-bar__cta {
+  display: flex;
+  align-items: center;
+  gap: .3rem;
+  font-size: .78rem;
+  font-weight: 800;
+  color: var(--dark);
+  text-decoration: none;
+  white-space: nowrap;
+  background: rgba(0,0,0,.12);
+  padding: .25rem .7rem;
+  border-radius: var(--radius-pill);
+  flex-shrink: 0;
+}
+.announce-bar__cta:hover { background: rgba(0,0,0,.22); }
+.announce-bar__cta .material-symbols-rounded { font-size: .9rem; }
+
+/* ── HERO EMOJI FALLBACK ───────────────────────────────────────────────────── */
+.masonry-hero__emoji {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 5rem;
+  z-index: 0;
+  opacity: .6;
+  pointer-events: none;
+}
+.masonry-hero__overlay {
+  background: linear-gradient(to top, rgba(0,0,0,.75) 0%, rgba(0,0,0,.1) 60%, transparent 100%) !important;
+}
+

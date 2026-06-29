@@ -62,17 +62,34 @@ export default async function HomePage() {
         <JsonLd key={e.id} data={eventSchema(e as Event, city)} />
       ))}
 
+      {/* Announcement bar */}
+      {articles && articles[0] && (
+        <div className="announce-bar">
+          <div className="announce-bar__inner container">
+            <Link href={`/guides/${articles[0].id}`} className="announce-bar__link">
+              {articles[0].title}
+            </Link>
+            <Link href="/events" className="announce-bar__cta">
+              <span className="material-symbols-rounded">calendar_month</span> Planning a visit?
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Hero */}
       {heroEvents.length > 0 && (
         <section className="masonry-hero container">
           <div className="masonry-hero__grid">
             {mainHero && (
               <Link href={`/events/${mainHero.id}`} className="masonry-hero__main">
-                <div className="masonry-hero__img-wrap">
+                <div className="masonry-hero__img-wrap" style={!mainHero.img ? { background: mainHero.color ?? '#1a1a1a' } : undefined}>
                   {mainHero.img && (
                     <Image src={mainHero.img} alt={mainHero.title} fill className="masonry-hero__img" sizes="(max-width: 640px) 100vw, 60vw" priority />
                   )}
-                  <div className="masonry-hero__overlay" style={{ background: mainHero.color ?? undefined }} />
+                  {!mainHero.img && mainHero.emoji && (
+                    <span className="masonry-hero__emoji">{mainHero.emoji}</span>
+                  )}
+                  <div className="masonry-hero__overlay" />
                 </div>
                 <div className="masonry-hero__info">
                   <span className="masonry-hero__badge">{mainHero.category ?? 'Event'}</span>
@@ -84,9 +101,12 @@ export default async function HomePage() {
             <div className="masonry-hero__stack">
               {sideHeroes.slice(0, 2).map(e => (
                 <Link key={e.id} href={`/events/${e.id}`} className="masonry-hero__small">
-                  <div className="masonry-hero__img-wrap">
+                  <div className="masonry-hero__img-wrap" style={!e.img ? { background: e.color ?? '#1a1a1a' } : undefined}>
                     {e.img && <Image src={e.img} alt={e.title} fill className="masonry-hero__img" sizes="(max-width: 640px) 100vw, 40vw" />}
-                    <div className="masonry-hero__overlay" style={{ background: e.color ?? undefined }} />
+                    {!e.img && e.emoji && (
+                      <span className="masonry-hero__emoji">{e.emoji}</span>
+                    )}
+                    <div className="masonry-hero__overlay" />
                   </div>
                   <div className="masonry-hero__info">
                     <span className="masonry-hero__badge">{e.category ?? 'Event'}</span>
