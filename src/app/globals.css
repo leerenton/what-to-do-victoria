@@ -5371,27 +5371,19 @@ button { cursor: pointer; font-family: inherit; border: none; background: none; 
 }
 
 
-/* ── NAV DARK OVERRIDES ────────────────────────────────────────────────────── */
-.nav {
-  background: var(--dark) !important;
-  border-bottom: none !important;
+/* ── CITY PILL (multi-city switcher in nav__end) ───────────────────────────── */
+.nav__city-pill {
+  display: flex; align-items: center; gap: .2rem;
+  font-size: .78rem; font-weight: 600; color: var(--mid);
+  background: none; border: 1.5px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: .25rem .6rem;
+  cursor: pointer; transition: border-color .15s, color .15s;
+  font-family: var(--font-body);
 }
-.nav__drop-toggle {
-  color: rgba(255,255,255,.9) !important;
-}
-.nav__drop-toggle:hover { color: var(--teal) !important; }
-.nav__links a:not(.btn) { color: rgba(255,255,255,.9); }
-.nav__links a:not(.btn):hover { color: var(--teal) !important; }
-.nav__link { color: rgba(255,255,255,.9) !important; }
-.nav__link:hover { color: var(--teal) !important; }
-.nav__city-btn {
-  border-color: rgba(255,255,255,.25) !important;
-  color: rgba(255,255,255,.8) !important;
-}
-.nav__city-btn:hover { border-color: var(--teal) !important; color: var(--teal) !important; }
-.nav__account-btn { background: rgba(255,255,255,.1) !important; color: rgba(255,255,255,.8) !important; }
-.nav__account-btn:hover { background: rgba(255,255,255,.2) !important; }
-.nav__mobile-toggle { color: rgba(255,255,255,.9) !important; }
+.nav__city-pill:hover { border-color: var(--teal); color: var(--teal); }
+.nav__city-pill .material-symbols-rounded { font-size: .9rem; }
+.nav__city-pill__name { max-width: 72px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* ── ANNOUNCEMENT BAR ──────────────────────────────────────────────────────── */
 .announce-bar {
